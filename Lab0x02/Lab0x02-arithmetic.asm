@@ -1,4 +1,5 @@
 
+
 section .data ;;initialized data
 
     x dd 0x2a ;; (42 in hexadecimal) dd --> means "data double-word", allocate memory for list of 32 bit integer
@@ -11,6 +12,7 @@ section .bss ;; uninitialize allocated memory
     that resb 4 ;; reserves 4 1 byte chunks of memory (same as above)
 
 section .text
+    extern _start
 
 _start:
 
