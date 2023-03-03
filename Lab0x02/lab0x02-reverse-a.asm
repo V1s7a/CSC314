@@ -50,6 +50,16 @@ single_char_loop:
     jmp single_char_loop
 
 end_single_char_loop:
+    ;; need to deal with newline character
+    mov esi, inputBuffer
+    add esi, [inputByteCount]     ;; address of newline character should be:
+    dec esi                     ;; inputBuffer + inputByteCount -1
+
+    mov eax, SYS_WRITE ;;print newline character
+    mov ebx, FD_STDOUT
+    mov ecx, esi
+    mov edx, 1
+    int 0x80 ;; trigger interrupt
 
     jmp reverse_loop ;;loop
 
