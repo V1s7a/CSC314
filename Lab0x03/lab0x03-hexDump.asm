@@ -84,10 +84,9 @@ high_nibble_skip_AtoF:
     int 0x80 ;; trigger sys interrrupt
 
     inc esi ;; increnet offset counter
-    cmp esi, [inputByteCount]
-    jge exit_byte_loop
-
     inc edi ;; increment bytes printed counter
+    
+
     ;; if we have done a multiple of bytes per line, we want to print newline character
     cmp edi, BYTES_PER_LINE
     jne byte_loop ;; nothing else to do so goto next character
@@ -99,9 +98,12 @@ high_nibble_skip_AtoF:
     mov edx, 1  ;;just printing one newline character
     int 0x80 ;; trigger sys interrupt
     xor edi, edi ;;reset bytes printed counter to zero
-    jmp byte_loop
 
-exit_byte_loop:
+    cmp esi, [inputByteCount]
+    jl byte_loop
+
+
+exit_byte_loop: ;; where byte loop exits, not needed but helpful
     jmp line_loop ;;we've proccessed all input characters from the line, so jump back up to read another line of input
 
 
