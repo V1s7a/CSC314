@@ -13,7 +13,7 @@ section .data
 
 section .bss
     inputByteCount resb 4 ;; use 32-bit integers unless you have a good reason not to
-    OUTPUT_BUFFER resb 3  ;; output buffer just big enough for two hex digits and space
+    OUTPUT_BUFFER resb 9  ;; output buffer needs 8 binary digits and a space
     INPUT_BUFFER resb 1024 ;;1kb input buffer
     IN_BUF_SIZE equ $ - INPUT_BUFFER
 
@@ -41,46 +41,31 @@ line_loop:
 byte_loop:
     ;; Convert the current byte to hexcidecimal, put it in the output buffer
     mov AL, [INPUT_BUFFER + esi] ;; copying the next byte to convert into register AL
-    mov AH, AL    ;; make a copy of the byte -- use AL for one nibble, and AH to get the other nibble
-    and AL, 0x0F  ;; masking register AL, to get the low order nibble
-    shr AH, 4     ;; shifting register AH 4 bits to the right to get the high order nibble
-
-    cmp AL, 10 ;; check if nibble is < 10
-    jae low_nibble_hex_AtoF ;;jump if in range 10 to 15 or hex digit A to F
-    ;; hex 0..9
-    add AL, '0' ;; add to the nibble value the ASCII code of character "0" or dec 48 or hex 0x30
-    jmp low_nibble_skip_AtoF
-
-low_nibble_hex_AtoF:
-    add AL, 0x37 ;; adding the nibble value to 10 less than ASCII character 'A'
-
-
-low_nibble_skip_AtoF:
-    ;; at this point we know that AL contains the ASCII code to the hex digit for the lower order nibble of the byte
-
-    cmp AH, 10 ;; check if nibble is < 10
-    jae high_nibble_hex_AtoF ;;jump if in range 10 to 15 or hex digit A to F
-    ;; hex 0..9
-    add AH, '0' ;; add to the nibble value the ASCII code of character "0" or dec 48 or hex 0x30
-    jmp high_nibble_skip_AtoF
-
-high_nibble_hex_AtoF:
-    add AH, 0x37 ;; adding the nibble value to 10 less than ASCII character 'A'
-
-
-high_nibble_skip_AtoF:
-    ;; at this point in our program we know AH contains the ascii code for the hex digit of the higher order nibble of the byte
     
-    ;;now print ascii character for the hex digits, and a space or newline afterthem
-    ;; sys_write needs those bytes in memory to do its thing
-    mov [OUTPUT_BUFFER], AH ;; put the high order digit character in the first byte of the output buffer
-    mov [OUTPUT_BUFFER +1], AL ;; put the low order byte in the next byte of the output buffer
-    mov byte [OUTPUT_BUFFER +2], ' ' ;; put space ascii in the next byte of output buffer
+    ;; turn bits in register AL to ascii 1's and 0's in the output buffer
+    ;; bit_loop to look at one bit at a time in our byte_loop
+    xor ebx, ebx ;; using ebx as bit loop counter (also the offset in the output buffer)
+bit_loop:
+    ;; look at next bit
+    shl AL, 1 ;;shift one bit to the left and see what falls out
+    jc one_bit
+    mov byte [OUTPUT_BUFFER + ebx], '0' ;; zero bit -- copy ascii char 0
+    jmp after_one_bit
+
+one_bit:
+    mov byte [OUTPUT_BUFFER + ebx], '1' ;; one bit -- copy ascii char 1 into next byte of output buffer
+
+after_one_bit:
+    inc ebx
+    cmp ebx, 8
+    jl bit_loop
+
+    mov byte [OUTPUT_BUFFER + 8], ' ' ;; space char after bit chars into the output buffer
 
     mov eax, SYS_WRITE    ;; needs bytes in memory
     mov ebx, FD_STDOUT
     mov ecx, OUTPUT_BUFFER
-    mov edx, 3         ;; how many to print?
+    mov edx, 9         ;; how many ascii bytes to print? 8 binary digits and a space
     int 0x80 ;; trigger sys interrrupt
 
     inc esi ;; increnet offset counter
