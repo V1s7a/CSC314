@@ -48,11 +48,11 @@ print:
 
 
     
-    mov cl, 1 ;; counter for triangle loop
+    xor al, al ;; counter for triangle loop
 
 triangle_loop:
     ;; print character
-    mov dl, cl ;;set counter for char_loop
+    mov ah, 42 ;;set counter for char_loop
     char_loop:
         ;;print character
         mov eax, SYS_WRITE
@@ -76,8 +76,8 @@ triangle_loop:
     mov edx, 1
     int 0x80 ;; trigger sys_int
 
-    inc cl
-    cmp cl, 42
+    inc cl ;; increment counter
+    cmp cl, 42 ;; check if meets requirements
     jz exit
     jmp triangle_loop
 
