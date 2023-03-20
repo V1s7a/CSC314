@@ -12,6 +12,8 @@ section .bss
     LINES equ 42 ;; set the number of lines to print to 42
     char_buff resb 2;; set one byte for character buffer
     inputCharCount resd 1 ;; allocate space to store number of characters for input
+    line_counter resb 4 ;; allocate 4 bytes to line counter
+    char_counter resb 4 ;; allocate 4 bytes to char counter
 
 section .text
     extern _start
@@ -50,11 +52,11 @@ print:
 
 
     
-    mov cx, 42 ;; counter for triangle loop
+    mov dword [line_counter], 42 ;; counter for triangle loop
 
 triangle_loop:
     ;; print character
-    mov ah, 2 ;;set counter for char_loop
+    mov dword [char_counter], [line_counter] ;;set counter for char_loop
     char_loop:
         ;;print character
         mov eax, SYS_WRITE
@@ -63,8 +65,8 @@ triangle_loop:
         mov edx, lenLetterA
         int 0x80
         ;;check number of times 
-        dec ah
-        cmp ah, 0
+        dec dword [char_counter]
+        cmp dword [char_counter], 0
         jg char_loop
 
 
@@ -77,8 +79,8 @@ triangle_loop:
     mov edx, 2
     int 0x80 ;; trigger sys_int
 
-    inc cl ;; increment counter
-    cmp cl, 42 ;; check if meets requirements
+    dec dword [line_counter] ;;decrement counter
+    cmp dword [line_counter], 42 ;; check if meets requirements
     jz exit
     jmp triangle_loop
 
