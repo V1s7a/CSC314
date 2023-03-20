@@ -5,6 +5,8 @@ section .data
     msgALen equ 52
     msgErrorLen equ 39
     msgSuccessLen equ 22
+    LetterA equ 'A'
+    lenLetterA equ 1
 
 section .bss
     LINES equ 42 ;; set the number of lines to print to 42
@@ -48,23 +50,22 @@ print:
 
 
     
-    xor al, al ;; counter for triangle loop
+    mov cx, 42 ;; counter for triangle loop
 
 triangle_loop:
     ;; print character
-    mov ah, 42 ;;set counter for char_loop
+    mov ah, 2 ;;set counter for char_loop
     char_loop:
         ;;print character
         mov eax, SYS_WRITE
         mov ebx, FD_STDOUT
-        mov ecx, 'A';;[char_buff-1]
-        mov edx, 1
+        mov ecx, LetterA ;;[char_buff-1]
+        mov edx, lenLetterA
         int 0x80
         ;;check number of times 
-        dec dl
-        cmp dl, 0
-        jz end_char_loop
-        jmp char_loop
+        dec ah
+        cmp ah, 0
+        jg char_loop
 
 
     end_char_loop:
@@ -73,7 +74,7 @@ triangle_loop:
     mov eax, SYS_WRITE
     mov ebx, FD_STDOUT
     mov ecx, 10 ;;newline character
-    mov edx, 1
+    mov edx, 2
     int 0x80 ;; trigger sys_int
 
     inc cl ;; increment counter
