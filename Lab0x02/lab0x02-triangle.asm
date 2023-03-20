@@ -5,6 +5,8 @@ section .data
     msgErrorLen equ $-error_msg ;; calculate length of error_msg
     success_msg db "Here is your triangle", 0x0A ;; success message
     msgSuccessLen equ $-success_msg
+    NEWLINE_BUF db 0x0A ;; newline character
+    lenNewline equ $-NEWLINE_BUF
     ;;msgALen equ 52
     ;;msgErrorLen equ 39
     ;;msgSuccessLen equ 22
@@ -55,34 +57,34 @@ print:
 
 
     
-    mov dword [line_counter], 42 ;; counter for triangle loop
+    mov dword [line_counter], 1;; counter for triangle loop
 
 triangle_loop:
     ;; print character
-    mov dword [char_counter], 2 ;;set counter for char_loop
+    mov esi, dword [line_counter]
+    mov dword [char_counter], esi ;;set counter for char_loop
     char_loop:
         ;;print character
         mov eax, SYS_WRITE
         mov ebx, FD_STDOUT
-        mov ecx, LetterA ;;[char_buff-1]
+        mov ecx, char_buff ;;[char_buff-1]
         mov edx, lenLetterA
         int 0x80
         ;;check number of times 
         dec dword [char_counter]
         cmp dword [char_counter], 0
         jg char_loop
+        jmp exit_char_loop
 
+    exit_char_loop:
+        ;; print newline
+        mov eax, SYS_WRITE
+        mov ebx, FD_STDOUT
+        mov ecx, NEWLINE_BUF ;;newline character
+        mov edx, lenNewline
+        int 0x80 ;; trigger sys_int
 
-    end_char_loop:
-
-    ;; print newline
-    mov eax, SYS_WRITE
-    mov ebx, FD_STDOUT
-    mov ecx, 10 ;;newline character
-    mov edx, 2
-    int 0x80 ;; trigger sys_int
-
-    dec dword [line_counter] ;;decrement counter
+    inc dword [line_counter] ;;decrement counter
     cmp dword [line_counter], 42 ;; check if meets requirements
     jz exit
     jmp triangle_loop
