@@ -1,11 +1,14 @@
 section .data
     msgA db "Please enter a single character to make a triangle:", 0x0A ;;startup message
+    msgALen equ $-msgA ;; calculate length of msgA
     error_msg db "Error: entered more than one character!" ;;error message
+    msgErrorLen equ $-error_msg ;; calculate length of error_msg
     success_msg db "Here is your triangle", 0x0A ;; success message
-    msgALen equ 52
-    msgErrorLen equ 39
-    msgSuccessLen equ 22
-    LetterA equ 'A'
+    msgSuccessLen equ $-success_msg
+    ;;msgALen equ 52
+    ;;msgErrorLen equ 39
+    ;;msgSuccessLen equ 22
+    LetterA db "A"
     lenLetterA equ 1
 
 section .bss
@@ -56,7 +59,7 @@ print:
 
 triangle_loop:
     ;; print character
-    mov dword [char_counter], [line_counter] ;;set counter for char_loop
+    mov dword [char_counter], 2 ;;set counter for char_loop
     char_loop:
         ;;print character
         mov eax, SYS_WRITE
