@@ -52,21 +52,47 @@ _start:
     ;;check if fizz or buzz needs to be printed
     ;; division for remainders first set remainders to three_rem and five_rem
         ;;divide by 3
-
-        ;;divide by 5
+        xor eax, eax
+        xor ebx, ebx
+        xor edx, edx
+        mov eax, [counter] ;; set counter to numerator
+        mov ebx, 3 ;; set denominator to 3
+        div ebx ;;divide eax by ebx
+        mov dword [three_rem], edx
         
+        ;;divide by 5
+        xor eax, eax
+        xor ebx, ebx
+        xor edx, edx
+        mov eax, [counter] ;; set counter to numerator
+        mov ebx, 5 ;; set denominator to 5
+        div ebx ;;divide eax by ebx
+        mov dword [five_rem], edx
+
 
     ;; check if both were divisible (check if both cmp to 0)
+    mov eax, dword [three_rem]
+    mov ebx, dword [five_rem]
+    cmp eax, 0 ;; compare three remainder to 0
+    jne both_not_equal ;; jump if not equal to 0
+    cmp ebx, 0 ;; compare five remainder to 0
+    jne both_not_equal ;; jump if not equal to zero
 
+    jmp print_fizzbuzz ;; jump to print fizzbuzz message
+
+    both_not_equal:
     ;;check if divisible by 3 if so print fizz
+    mov eax, dword [three_rem] ;; move remainder to eax
+    cmp eax, 0  ;; compare if remainder is equal to zero
+    je print_fizz ;; if equal jump to print fizz message
 
     ;; check if divisible by 5 if so print buzz
+    mov eax, dword [five_rem] ;; move remainder to eax
+    cmp eax, 0 ;; compare if remainder is equal to zero
+    je print_buzz ;; if equal jump to print buzz message
 
-    
-
+    ;;all else print newline
     jmp print_newline
-
-
 
 print_buzz:
     ;;Print buzz message
