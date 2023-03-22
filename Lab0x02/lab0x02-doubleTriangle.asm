@@ -1,5 +1,5 @@
 section .data
-    msgA db "Please enter a single character to make a triangle:", 0x0A ;;startup message
+    msgA db "Please enter a two characters to make a double triangle:", 0x0A ;;startup message
     msgALen equ $-msgA ;; calculate length of msgA
     error_msg db "Error: entered more than one character!" ;;error message
     msgErrorLen equ $-error_msg ;; calculate length of error_msg
