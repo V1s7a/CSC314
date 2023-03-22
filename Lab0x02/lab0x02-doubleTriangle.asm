@@ -1,15 +1,24 @@
 section .data
     msgA db "Please enter a single character to make a triangle:", 0x0A ;;startup message
+    msgALen equ $-msgA ;; calculate length of msgA
     error_msg db "Error: entered more than one character!" ;;error message
+    msgErrorLen equ $-error_msg ;; calculate length of error_msg
     success_msg db "Here is your triangle", 0x0A ;; success message
-    msgALen equ 52
-    msgErrorLen equ 39
-    msgSuccessLen equ 22
+    msgSuccessLen equ $-success_msg
+    NEWLINE_BUF db 0x0A ;; newline character
+    lenNewline equ $-NEWLINE_BUF
+    ;;msgALen equ 52
+    ;;msgErrorLen equ 39
+    ;;msgSuccessLen equ 22
+    LetterA db "A"
+    lenLetterA equ 1
 
 section .bss
     LINES equ 42 ;; set the number of lines to print to 42
     char_buff resb 2;; set one byte for character buffer
     inputCharCount resd 1 ;; allocate space to store number of characters for input
+    line_counter resb 4 ;; allocate 4 bytes to line counter
+    char_counter resb 4 ;; allocate 4 bytes to char counter
 
 section .text
     extern _start
@@ -48,36 +57,48 @@ print:
 
 
     
-    xor al, al ;; counter for triangle loop
+    mov dword [line_counter], 1;; counter for triangle loop
 
 triangle_loop:
     ;; print character
-    ;;set counter for char_loop
-    char_loop:
-        ;;print character
+    mov esi, dword [line_counter]
+    mov dword [char_counter], esi ;;set counter for char_loop
+    first_char_loop:
+        ;;print first character
         mov eax, SYS_WRITE
         mov ebx, FD_STDOUT
-        mov ecx, [char_buff-1]
-        mov edx, 1
+        mov ecx, char_buff ;;[char_buff-1]
+        mov edx, lenLetterA
         int 0x80
         ;;check number of times 
-        dec dl
-        cmp dl, 0
-        jz end_char_loop
-        jmp char_loop
+        dec dword [char_counter]
+        cmp dword [char_counter], 0
+        jg char_loop
+        jmp second_char_loop
 
+    second_char_loop:
+        ;;print first character
+        mov eax, SYS_WRITE
+        mov ebx, FD_STDOUT
+        mov ecx, char_buff ;;[char_buff-1]
+        mov edx, lenLetterA
+        int 0x80
+        ;;check number of times 
+        dec dword [char_counter]
+        cmp dword [char_counter], 0
+        jg second_char_loop
+        jmp second_char_loop
 
-    end_char_loop:
+    exit_char_loop:
+        ;; print newline
+        mov eax, SYS_WRITE
+        mov ebx, FD_STDOUT
+        mov ecx, NEWLINE_BUF ;;newline character
+        mov edx, lenNewline
+        int 0x80 ;; trigger sys_int
 
-    ;; print newline
-    mov eax, SYS_WRITE
-    mov ebx, FD_STDOUT
-    mov ecx, 10 ;;newline character
-    mov edx, 1
-    int 0x80 ;; trigger sys_int
-
-    inc cl ;; increment counter
-    cmp cl, 42 ;; check if meets requirements
+    inc dword [line_counter] ;;decrement counter
+    cmp dword [line_counter], 42 ;; check if meets requirements
     jz exit
     jmp triangle_loop
 
