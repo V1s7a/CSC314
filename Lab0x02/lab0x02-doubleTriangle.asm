@@ -15,10 +15,11 @@ section .data
 
 section .bss
     LINES equ 42 ;; set the number of lines to print to 42
-    char_buff resb 2;; set one byte for character buffer
-    inputCharCount resd 1 ;; allocate space to store number of characters for input
+    char_buff resb 3;; set one byte for character buffer
+    inputCharCount resd 2 ;; allocate space to store number of characters for input
     line_counter resb 4 ;; allocate 4 bytes to line counter
     char_counter resb 4 ;; allocate 4 bytes to char counter
+    second_char_counter resb 4 ;; allocate 4 bytes to second char counter
 
 section .text
     extern _start
@@ -42,7 +43,7 @@ _start:
     mov [inputCharCount], eax ;; move number of characters from input into variable
 
     ;;check for more than one character
-    cmp eax, 2 ;; compare if eax has 1 character + newline char 
+    cmp eax, 3 ;; compare if eax has 2 characters + newline char 
     jz print ;; jump if equal to print
     jmp error ;;jump to error otherwise
 
@@ -54,40 +55,40 @@ print:
     mov edx, msgSuccessLen
     int 0x80 ;; trigger sys_interrupt
 
-
-
-    
     mov dword [line_counter], 1;; counter for triangle loop
 
 triangle_loop:
     ;; print character
     mov esi, dword [line_counter]
     mov dword [char_counter], esi ;;set counter for char_loop
+    mov edi, 42 ;; set max number
+    sub edi, esi
+    mov dword [second_char_counter], edi ;; set counter for second_char_loop
     first_char_loop:
         ;;print first character
         mov eax, SYS_WRITE
         mov ebx, FD_STDOUT
-        mov ecx, char_buff ;;[char_buff-1]
+        mov ecx, char_buff 
         mov edx, lenLetterA
         int 0x80
         ;;check number of times 
         dec dword [char_counter]
         cmp dword [char_counter], 0
-        jg char_loop
+        jg first_char_loop
         jmp second_char_loop
 
     second_char_loop:
-        ;;print first character
+        ;;print second character
         mov eax, SYS_WRITE
         mov ebx, FD_STDOUT
-        mov ecx, char_buff ;;[char_buff-1]
+        mov ecx, char_buff+1
         mov edx, lenLetterA
         int 0x80
         ;;check number of times 
-        dec dword [char_counter]
-        cmp dword [char_counter], 0
+        dec dword [second_char_counter]
+        cmp dword [second_char_counter], 0
         jg second_char_loop
-        jmp second_char_loop
+        jmp exit_char_loop
 
     exit_char_loop:
         ;; print newline
@@ -104,14 +105,6 @@ triangle_loop:
 
     
 
-    
-    
-    
-
-
-
-    
-
 error:
     ;;Print error message
     mov eax, SYS_WRITE
@@ -124,9 +117,7 @@ error:
 
 exit:
     ;;EXIT PROGRAM
-    mov eax, 1
-    mov ebx, 0
-    int 0x80
+    
 
 ;; define some symbols
 
