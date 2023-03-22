@@ -5,7 +5,7 @@
 ;; with multiple conditional jump statement by analyzing the flag set by the comparision.
 ;; The idea behind this program is there is a hardcoded number that one has to guess between 1 and 10
 ;; The attempted program in C is also included in the same zipfile in multicase.c The reversed C outpu
-;; for multicase.asm can be found in multicaseReversed.c
+;; for multicase.asm can be found in multicaseRev.c
 
 ;; define some symbols
 
@@ -66,14 +66,13 @@ test_loop:
     mov esi, '0' ;;move ascii char 0 to register esi
     cmp [INPUT_BUFFER], esi ;; compare if equal to ascii 0
     je exit ;;if so jump to exit
-    xor esi, esi ;;reset esi so it can be reused without possibility of adding
+    xor esi, esi ;;reset esi so it can be reused 
 
     ;;!!!TEST CODE !!!!
-    mov esi, '7' ;; move correctNumber ascii value to register edi
-    cmp [INPUT_BUFFER], edi ;;compare ascii chars
+    cmp dword [INPUT_BUFFER], 0x37 ;;compare ascii char '7'
     je correct
-    jg higher
-    jl lower
+    jg lower ;; reversed lower -> jl and higher -> jg this should be correct now based on the message
+    jl higher ;; to be printed
     jmp test_loop ;;if not proper input just rerun loop
 
 
