@@ -89,16 +89,6 @@ triangle_loop:
     jz exit
     jmp triangle_loop
 
-    
-
-    
-    
-    
-
-
-
-    
-
 error:
     ;;Print error message
     mov eax, SYS_WRITE
