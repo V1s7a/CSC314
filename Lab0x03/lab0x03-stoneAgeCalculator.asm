@@ -21,7 +21,7 @@ section .data
     exit_char db 'x' ;;character to exit program
     startmsg db "Welcome to the stone age.", 0x0A, "We do math with pebbles. o", 0x0A, "=", 0x0A ;;starting message
     startmsg_len equ $ - startmsg ;;length of starting message
-    exitmsg db "...returning to your proper time in history."
+    exitmsg db "...returning to your proper time in history.", 0x0A
     exitmsg_len equ $ - exitmsg ;; length of exit message
     syntaxErrormsg db "Ug! What that? You hurt Grog head!", 0x0A, "=", 0x0A ;; syntax error msg
     syntaxErrormsg_len equ $ - syntaxErrormsg ;; length of exit message
