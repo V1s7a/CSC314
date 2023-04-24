@@ -29,6 +29,8 @@ section .data
     syntaxErrormsg2_len equ $ - syntaxErrormsg2 ;; length of syntaxErrormsg2
     syntaxErrormsg3 db "Ug! Number too big!", 0x0A ;; Too big number message
     syntaxErrormsg3_len equ $ - syntaxErrormsg3 ;; length of syntaxErrormsg3
+    syntaxErrormsg4 db "Ug! Number can't be below nothing.", 0x0A ;; negative number error
+    syntaxErrormsg4_len equ $ - syntaxErrormsg4 ;; lenght of syntaxErrormsg4
     newline db 0x0A
     valid_chars db "+-*/%o"
 
@@ -136,7 +138,9 @@ subtraction_func:
     mov eax, [Counter]
     mov ebx, [ByteCounter]
     sub eax, ebx ;; subtract ebx from eax
-    mov dword [Counter], eax ;; move return value in eax to Counter
+    mov dword [Counter], eax ;; copy return value in eax to Counter
+    test eax, 0x80000000 ;; test if the MSB of eax is set
+    jnz syntaxError4   ;; jump to syntaxError4 if the result is negative
     jmp print ;; jump to print output
 
 multiplication_func:
@@ -233,7 +237,14 @@ syntaxError3:
     int 0x80 ;; trigger sys interrupt
     jmp clear_func ;; jump to print output
 
-
+syntaxError4:
+    ;;print syntax error message 3
+    mov eax, SYS_WRITE
+    mov ebx, FD_STDOUT
+    mov ecx, syntaxErrormsg4
+    mov edx, syntaxErrormsg4_len
+    int 0x80 ;; trigger sys interrupt
+    jmp clear_func ;; jump to print output
     
 exit:
     ;;print exit message
