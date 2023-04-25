@@ -1,0 +1,18 @@
+function is_brackets_matched(str) {
+    stack = empty list
+    for each char in str {
+        if char is opening bracket {
+            push char onto stack
+        } else if char is closing bracket {
+            if stack is empty {
+                return false // no matching opening bracket found
+            }
+            top = pop from stack
+            if top does not match char {
+                return false // mismatched bracket found
+            }
+        }
+    }
+    return true // all brackets matched
+}
+
