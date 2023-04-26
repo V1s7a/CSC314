@@ -10,7 +10,7 @@
 int sumOfSumsAtoB(int a, int b); // prototype for library function (normally you would have this in an #include .h header file for the library)
 
 // ***** Uncomment this when ready to test your tweaked assembly version 
-//int sumOfSumsAtoB_tweaked(int a, int b); // prototype for assembly version of the function
+int sumOfSumsAtoB_tweaked(int a, int b); // prototype for assembly version of the function
 
 
 int dummyFunction(int a, int b) {
@@ -23,7 +23,7 @@ void validationTest(int testA, int testB) {
     printf("sumOfSumsAtoB(%d,%d) = %d\n", testA, testB, sumOfSumsAtoB(testA,testB));    
     // uncomment below when testing tweaked funciton to compare with original to
     // verify that your tweaked function still produces the same result as original
-    //printf("sumOfsumsAtoB_tweaked(%d,%d) = %d\n", testA, testB, sumOfSumsAtoB_tweaked(testA,testB));// <--------- UNCOMMENT for testing tweaked function *********
+    printf("sumOfsumsAtoB_tweaked(%d,%d) = %d\n", testA, testB, sumOfSumsAtoB_tweaked(testA,testB));// <--------- UNCOMMENT for testing tweaked function *********
 }
 
 #define N_TESTS 200000
@@ -76,7 +76,7 @@ void main() {
     
     // run speed test of your tweaked assembly version of the function...
     // ***** uncomment below when ready to run the tests on your version of the function
-    /*
+    
     printf("\nMeasuring time to run the tweaked asm function in the test loop...\n");
     before = clock();
     for(k=0;k<N_TESTS;k++) {
@@ -92,7 +92,7 @@ void main() {
     printf("\n======================================================\n\n");
     printf("Tweaked version took %.2lf milliseconds less time.\n",timeDifference);
     printf("Tweaked version was %.2lf times faster.\n",speedupFactor);
-    */
+    
 }
 
 //////////////////////////////////////////////////////////////////
