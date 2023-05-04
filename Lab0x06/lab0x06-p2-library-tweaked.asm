@@ -1,43 +1,80 @@
-
 global sumOfSumsAtoB_tweaked
 extern __x86.get_pc_thunk.ax
 extern _GLOBAL_OFFSET_TABLE_
-
 
 section .text
 
 sumOfSumsAtoB_tweaked:
     push ebp
     mov ebp, esp
-    sub esp, 16
+    sub esp, 12  ; only need to allocate space for 3 variables instead of 4
 
     ; calculate the address of the global offset table and store in eax
     call __x86.get_pc_thunk.ax
     add eax, [_GLOBAL_OFFSET_TABLE_]
 
     ; initialize variables
-    mov edx, [ebp+8]       ; upper bound of the outer sum
-    mov dword [ebp-12], edx    ; initialize the outer sum to upper bound
-    mov dword [ebp-8], 0        ; initialize the inner sum to 0
-    mov dword [ebp-4], 0        ; initialize the total sum to 0
-    jmp .L2
+    mov ecx, [ebp+8]  ; use ecx as a counter for the outer loop
+    mov eax, 0        ; initialize the total sum to 0
+    jmp .outer_loop   ; jump to the start of the outer loop
 
-.L3:
-    mov eax, [ebp-12]           ; load the current outer sum index
-    add dword [ebp-8], eax      ; add the index to the inner sum
-    mov eax, [ebp-8]            ; load the current inner sum
-    add dword [ebp-4], eax      ; add the inner sum to the total sum
-    add dword [ebp-12], 1       ; increment the outer sum index
+.inner_loop:
+    add ebx, edx  ; add the inner loop counter to the inner sum
+    add edx, 1    ; increment the inner loop counter
+    cmp edx, ecx  ; compare the inner loop counter with the outer loop counter
+    jle .inner_loop  ; if it's less than or equal, continue the inner loop
 
-.L2:
-	; loop through the outer sum
-    mov eax, [ebp-12]           ; load the current outer sum index
-    cmp eax, [ebp+12]           ; compare it with the upper bound
-    jle .L3                     ; if it's less than or equal, continue the loop
+    add eax, ebx  ; add the inner sum to the total sum
 
-    mov eax, [ebp-4]            ; move the total sum to eax
-    leave                       ; restore the stack pointer
-    ret                         ; return from the function
+.outer_loop:
+    mov ebx, 0      ; initialize the inner sum to 0
+    mov edx, ecx    ; use edx as a counter for the inner loop
+    sub ecx, 1      ; decrement the outer loop counter
+    jnz .inner_loop ; if it's not zero, continue the outer loop
+
+    leave         ; restore the stack pointer
+    ret           ; return from the function
+
+
+; global sumOfSumsAtoB_tweaked
+; extern __x86.get_pc_thunk.ax
+; extern _GLOBAL_OFFSET_TABLE_
+
+
+; section .text
+
+; sumOfSumsAtoB_tweaked:
+;     push ebp
+;     mov ebp, esp
+;     sub esp, 16
+
+;     ; calculate the address of the global offset table and store in eax
+;     call __x86.get_pc_thunk.ax
+;     add eax, [_GLOBAL_OFFSET_TABLE_]
+
+;     ; initialize variables
+;     mov edx, [ebp+8]       ; upper bound of the outer sum
+;     mov dword [ebp-12], edx    ; initialize the outer sum to upper bound
+;     mov dword [ebp-8], 0        ; initialize the inner sum to 0
+;     mov dword [ebp-4], 0        ; initialize the total sum to 0
+;     jmp .L2
+
+; .L3:
+;     mov eax, [ebp-12]           ; load the current outer sum index
+;     add dword [ebp-8], eax      ; add the index to the inner sum
+;     mov eax, [ebp-8]            ; load the current inner sum
+;     add dword [ebp-4], eax      ; add the inner sum to the total sum
+;     add dword [ebp-12], 1       ; increment the outer sum index
+
+; .L2:
+; 	; loop through the outer sum
+;     mov eax, [ebp-12]           ; load the current outer sum index
+;     cmp eax, [ebp+12]           ; compare it with the upper bound
+;     jle .L3                     ; if it's less than or equal, continue the loop
+
+;     mov eax, [ebp-4]            ; move the total sum to eax
+;     leave                       ; restore the stack pointer
+;     ret                         ; return from the function
 
 
 
