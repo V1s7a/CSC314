@@ -14,6 +14,11 @@ section .data
     
     ;printf formats
     dbgIntFmt db "Debug: %d %d",0x0A,0x00
+
+    ;;pause message and variable
+    isPaused db 0 ;; 0 is not paused and 1 is paused
+    msgPaused db "PAUSED", 0x00 ;;pause message
+    msgPaused_len equ $ - msgPaused ;; pause message length
     
 section .bss
     lvlFilePtr resb 4
@@ -55,6 +60,7 @@ extern fopen
 extern fclose
 extern getchar
 extern gets
+extern usleep
 
 ;; ncurse lib functions
 extern initscr
@@ -161,6 +167,8 @@ _GameTick:
     je _keyDown
     cmp AL, 'd'
     je _keyRight
+    cmp AL, 20
+    je _pause
     
     jmp _continue
 
@@ -185,7 +193,16 @@ _GameTick:
        mov dword [yStep],0
        jmp _continue
 
+    _pause:
+        ;;change the pause state
+        xor byte [isPaused], 1
+        jmp _continue
+
+
     _continue:
+        ;; check if game is in a paused state, if so skip updating the assembipede's position
+        cmp byte [isPaused], 1
+        je _skipUpdate
 
     
        ; fetch head & tail INDEXES into ESI & EDI
@@ -205,6 +222,11 @@ _GameTick:
        cmp esi, maxSegmentIndex
        jl _skipWrapHeadIndex
        sub esi, maxSegmentIndex
+
+    _skipUpdate:
+        ;; wait before the next tick by looping with no changes
+        jmp _GameTick
+
     _skipWrapHeadIndex:
        mov [headIndex], esi      ; store the new head index back into memory
        ; now do the same for the tail index
