@@ -12,13 +12,21 @@ section .data
     oneIntFmt db "%d",0x00    ; format string for scanf reading one integer
     twoIntFmt db "%d %d",0x00 ; format string for scanf reading two integers
     
+
     ;printf formats
     dbgIntFmt db "Debug: %d %d",0x0A,0x00
 
     ;;pause message and variable
     isPaused db 0 ;; 0 is not paused and 1 is paused
-    msgPaused db "PAUSED", 0x00 ;;pause message
+    msgPaused db 9, "PAUSED", 0x00 ;;pause message
     msgPaused_len equ $ - msgPaused ;; pause message length
+    
+    ;;score message
+    scoreMsg db 0x0A, "Score: %d", 0
+    ;score db scoreInt, 0 ;;create variable and set score to zero
+    
+    ;; add instructions
+    instructions db "Press esc to exit, WASD to control, and Space to pause", 0x0A, 0
     
 section .bss
     lvlFilePtr resb 4
@@ -48,7 +56,7 @@ section .bss
                        ; and can wrap around so the head can be chasing the tail (when head is chasing tail, the entries in between are garbage data)
     bodyLength resb 4  ; length of the millipede body -- should equal 1 + ( headIndex-tailIndex(modulo maxLvlBufferSize) )
                        ; "modulo" or "clock arithmetic" because head/tail indexes can "wrap around"
-    
+    scoreInt resb 4 
 
     dbgBuffer resb 1000
 
@@ -96,6 +104,9 @@ _start:
    
    ; the args will be used by _LoadLevel -- getting the filename of the level data to load
    ; loadlevel is purely internal to this program and does not need cdecl
+;;initialize the score
+    ;mov byte [scoreInt], 0
+
    call _LoadLevel 
 
 
@@ -121,11 +132,28 @@ _GameLoop:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     call clear      ; ncurses: clear --  clears screen and puts print position in the top left corner
 
+    push dword instructions ;; print instructions at top of display
+    call printw
+    add esp, 4
+
     push dword lvlBuffer  ; lvlBuffer should just contain one large multiline string...
     call printw           ; ncurses: printw -- works just like printf, except printing starts from current print position on the ncurses screen
                           ;                    here we are just using it to print entire lvlBuffer
     add esp,4
 
+    ;; print score
+    mov edx, [bodyLength]
+    push edx
+    push dword scoreMsg
+    call printw
+    add esp, 4
+
+    ;;check if pause msg is needed to be displayed
+    cmp byte [isPaused], 1
+    jne skipPauseMsg
+    call printPause
+
+    skipPauseMsg:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; _Update lvlBuffer based on player movement & game "AI"
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,6 +161,11 @@ _GameLoop:
 
     jmp _GameLoop
 
+printPause:
+    push dword msgPaused
+    call printw
+    add esp, 4
+    ret
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 _exit:
     ;wrapup ncurses stuff...
@@ -167,8 +200,10 @@ _GameTick:
     je _keyDown
     cmp AL, 'd'
     je _keyRight
-    cmp AL, 20
+    cmp AL, 32 ;; spacebar
     je _pause
+    cmp AL, 27 ;;esc key
+    je _exit
     
     jmp _continue
 
@@ -194,8 +229,10 @@ _GameTick:
        jmp _continue
 
     _pause:
-        ;;change the pause state
+        ;;change the pause state and print pause message
         xor byte [isPaused], 1
+        ;push msgPaused
+        ;call printw
         jmp _continue
 
 
@@ -204,6 +241,7 @@ _GameTick:
         cmp byte [isPaused], 1
         je _skipUpdate
 
+        call _checkPosition
     
        ; fetch head & tail INDEXES into ESI & EDI
        mov esi, [headIndex]
@@ -223,9 +261,8 @@ _GameTick:
        jl _skipWrapHeadIndex
        sub esi, maxSegmentIndex
 
-    _skipUpdate:
-        ;; wait before the next tick by looping with no changes
-        jmp _GameTick
+    
+        
 
     _skipWrapHeadIndex:
        mov [headIndex], esi      ; store the new head index back into memory
@@ -245,8 +282,28 @@ _GameTick:
        mov byte [eax],'@' ; put the head in the new location
        mov [bodySegmentAddresses + 4*esi],eax ; save the new head address in bodySementAddressees[headIndex]
        
+       _skipUpdate:
+        ;; wait before the next tick by looping with no changes
        
     ret
+
+_checkPosition:
+    ;; get position of head and tail
+
+    ;; see if head and tail match
+
+    ;; loop through body and compare position
+
+    ;; get position of walls and borders
+
+    ;; compare if there is a wall or border
+    ;; may need to do another loop here
+
+    ;; compare if collided with an 'asterisk' and increment the bodyLength
+
+    ;;return
+    ret
+
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  _LoadLevel
