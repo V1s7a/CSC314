@@ -241,7 +241,7 @@ _GameTick:
         cmp byte [isPaused], 1
         je _skipUpdate
 
-        call _checkPosition
+        
     
        ; fetch head & tail INDEXES into ESI & EDI
        mov esi, [headIndex]
@@ -281,6 +281,8 @@ _GameTick:
        add eax, ecx       ; add it to the head position address
        mov byte [eax],'@' ; put the head in the new location
        mov [bodySegmentAddresses + 4*esi],eax ; save the new head address in bodySementAddressees[headIndex]
+
+       call _checkPosition ;; call the check position function
        
        _skipUpdate:
         ;; wait before the next tick by looping with no changes
@@ -288,23 +290,60 @@ _GameTick:
     ret
 
 _checkPosition:
-    ;; get position of head and tail
+    ;; get position of head and tail and lvlbuffer address
+    mov eax, lvlBuffer
+    mov ebx, [headIndex]
+    mov edx, [tailIndex]
+    mov ecx, bodySegmentAddresses
 
     ;; see if head and tail match
+    cmp edx, ebx
+    je _exit
 
     ;; loop through body and compare position
+    xor esi, esi ;; set esi as the counter
+    body_loop:
+        cmp esi, [bodyLength] ;; compare esi if it is the same as body length
+        je exit_bl            ;; if so exit loop
+        cmp ebx, [ecx + esi]  ;; compare the postion of the head to the position of a body section change address position with esi
+        je _exit              ;; if they are the same exit as a part of 'death'
+        inc esi               ;; increment the counter
+        jmp body_loop         ;; jump back to body loop
+
+    exit_bl:
 
     ;; get position of walls and borders
+    xor esi, esi ;;set esi as the counter
+    buffer_loop:
+        cmp esi, [lvlBufSize] ;; compare if counter equals the size of the buffer
+        je exit_buffer_loop   ;; if so exit buffer loop
+        cmp byte [lvlBuffer + esi], ' ' ;;compare if character is whitespace
+        jne _charCompare     ;; if it is not whitespace jump to compare characters
+        inc esi
+        jmp buffer_loop
 
-    ;; compare if there is a wall or border
-    ;; may need to do another loop here
-
-    ;; compare if collided with an 'asterisk' and increment the bodyLength
-
-    ;;return
+    exit_buffer_loop:
     ret
 
+_charCompare:
+    ;;NOTE: Here is the code from when it is calculated for head
+    ; ; calculate the body segment's address within lvlBuffer
+    ; ; the store it in appropriate element within bodySegmentAddresses
+    ; mov eax, lvlBuffer
+    ; mov ecx, [segmentY]
+    ; imul ecx, [yDelta]
+    ; add eax, ecx         ; eax now hold the address of this body segment within lvlBuffer
+    ; add eax, [segmentX]
+    ; mov esi, bodySegmentAddresses
+    ; mov [esi + 4*edi],eax            ; storing the address for this body segment in bodySegmentAddresses
+
+    ;;calculate char position from headIndex and buffer position in esi
     
+
+
+    ret
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  _LoadLevel
 ;;      Reads the level file, with some rudimentary verification of format
